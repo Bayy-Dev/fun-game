@@ -40,7 +40,7 @@ export default function Navbar() {
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#13131e] border border-[#1e1e2e]">
                 <User className="w-3.5 h-3.5 text-violet-400" />
                 <span className="text-sm text-slate-300 max-w-[120px] truncate">
-                  {user.email?.split('@')[0]}
+                  {user.user_metadata?.username || user.email?.split('@')[0]}
                 </span>
               </div>
               <button

@@ -4,12 +4,12 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Gamepad2, Mail, Lock, Eye, EyeOff, AlertCircle, CheckCircle2 } from 'lucide-react'
+import { Gamepad2, User, Lock, Eye, EyeOff, AlertCircle, CheckCircle2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
 export default function RegisterPage() {
   const router = useRouter()
-  const [email, setEmail] = useState('')
+  const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [showPass, setShowPass] = useState(false)
@@ -19,30 +19,45 @@ export default function RegisterPage() {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError('')
+
+    if (username.trim().length < 3) {
+      setError('Username minimal 3 karakter.')
+      return
+    }
+    if (password.length < 1) {
+      setError('Password tidak boleh kosong.')
+      return
+    }
     if (password !== confirm) {
       setError('Password tidak cocok.')
       return
     }
-    if (password.length < 6) {
-      setError('Password minimal 6 karakter.')
-      return
-    }
 
     setLoading(true)
-    setError('')
 
+    const email = `${username.trim().toLowerCase()}@fungamehub.local`
     const supabase = createClient()
+
     const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: { emailRedirectTo: `${window.location.origin}/` },
+      options: {
+        data: { username: username.trim() },
+        emailRedirectTo: undefined,
+      },
     })
 
     if (error) {
-      setError(error.message)
+      if (error.message.includes('already registered') || error.message.includes('already been registered')) {
+        setError('Username sudah dipakai, coba yang lain.')
+      } else {
+        setError(error.message)
+      }
       setLoading(false)
     } else {
       setSuccess(true)
+      setTimeout(() => router.push('/'), 1500)
     }
   }
 
@@ -55,17 +70,9 @@ export default function RegisterPage() {
           className="w-full max-w-md text-center neon-border rounded-2xl bg-[#0d0d14] p-10"
         >
           <CheckCircle2 className="w-16 h-16 text-green-400 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-white mb-2">Cek Email Kamu!</h2>
-          <p className="text-slate-400 text-sm leading-relaxed">
-            Kami kirim link konfirmasi ke <span className="text-violet-400">{email}</span>.
-            Klik link itu untuk aktifkan akun kamu.
-          </p>
-          <Link
-            href="/auth/login"
-            className="inline-block mt-6 px-6 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium transition-all"
-          >
-            Ke Halaman Login
-          </Link>
+          <h2 className="text-2xl font-bold text-white mb-2">Akun Dibuat!</h2>
+          <p className="text-slate-400 text-sm">Selamat datang, <span className="text-violet-400 font-semibold">{username}</span>!</p>
+          <p className="text-slate-600 text-xs mt-2">Mengalihkan...</p>
         </motion.div>
       </div>
     )
@@ -109,15 +116,16 @@ export default function RegisterPage() {
             )}
 
             <div className="space-y-1">
-              <label className="text-sm text-slate-400">Email</label>
+              <label className="text-sm text-slate-400">Username</label>
               <div className="relative">
-                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                 <input
-                  type="email"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  placeholder="kamu@email.com"
+                  type="text"
+                  value={username}
+                  onChange={e => setUsername(e.target.value)}
+                  placeholder="username kamu"
                   required
+                  autoComplete="off"
                   className="cyber-input w-full pl-10 pr-4 py-3 rounded-xl text-sm placeholder:text-slate-600"
                 />
               </div>
@@ -131,7 +139,7 @@ export default function RegisterPage() {
                   type={showPass ? 'text' : 'password'}
                   value={password}
                   onChange={e => setPassword(e.target.value)}
-                  placeholder="Min. 6 karakter"
+                  placeholder="password kamu"
                   required
                   className="cyber-input w-full pl-10 pr-10 py-3 rounded-xl text-sm placeholder:text-slate-600"
                 />
@@ -153,7 +161,7 @@ export default function RegisterPage() {
                   type={showPass ? 'text' : 'password'}
                   value={confirm}
                   onChange={e => setConfirm(e.target.value)}
-                  placeholder="Ulangi password"
+                  placeholder="ulangi password"
                   required
                   className="cyber-input w-full pl-10 pr-4 py-3 rounded-xl text-sm placeholder:text-slate-600"
                 />

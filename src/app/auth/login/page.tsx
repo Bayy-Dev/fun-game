@@ -4,12 +4,12 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Gamepad2, Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react'
+import { Gamepad2, User, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
 export default function LoginPage() {
   const router = useRouter()
-  const [email, setEmail] = useState('')
+  const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [showPass, setShowPass] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -20,13 +20,13 @@ export default function LoginPage() {
     setLoading(true)
     setError('')
 
+    const email = `${username.trim().toLowerCase()}@fungamehub.local`
     const supabase = createClient()
+
     const { error } = await supabase.auth.signInWithPassword({ email, password })
 
     if (error) {
-      setError(error.message === 'Invalid login credentials'
-        ? 'Email atau password salah.'
-        : error.message)
+      setError('Username atau password salah.')
       setLoading(false)
     } else {
       router.push('/')
@@ -36,7 +36,6 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen cyber-grid flex items-center justify-center px-4">
-      {/* Background glows */}
       <div className="fixed top-1/4 left-1/4 w-96 h-96 bg-violet-600/10 rounded-full blur-3xl pointer-events-none" />
       <div className="fixed bottom-1/4 right-1/4 w-64 h-64 bg-cyan-600/10 rounded-full blur-3xl pointer-events-none" />
 
@@ -46,9 +45,7 @@ export default function LoginPage() {
         transition={{ duration: 0.5, ease: 'easeOut' }}
         className="w-full max-w-md"
       >
-        {/* Card */}
         <div className="neon-border rounded-2xl bg-[#0d0d14] p-8">
-          {/* Logo */}
           <div className="text-center mb-8">
             <Link href="/" className="inline-flex items-center gap-2 mb-4">
               <Gamepad2 className="w-8 h-8 text-violet-400" />
@@ -62,7 +59,6 @@ export default function LoginPage() {
             <p className="text-slate-500 text-sm mt-1">Masuk untuk lanjut main</p>
           </div>
 
-          {/* Form */}
           <form onSubmit={handleLogin} className="space-y-4">
             {error && (
               <motion.div
@@ -76,15 +72,16 @@ export default function LoginPage() {
             )}
 
             <div className="space-y-1">
-              <label className="text-sm text-slate-400">Email</label>
+              <label className="text-sm text-slate-400">Username</label>
               <div className="relative">
-                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                 <input
-                  type="email"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  placeholder="kamu@email.com"
+                  type="text"
+                  value={username}
+                  onChange={e => setUsername(e.target.value)}
+                  placeholder="username kamu"
                   required
+                  autoComplete="off"
                   className="cyber-input w-full pl-10 pr-4 py-3 rounded-xl text-sm placeholder:text-slate-600"
                 />
               </div>
@@ -98,7 +95,7 @@ export default function LoginPage() {
                   type={showPass ? 'text' : 'password'}
                   value={password}
                   onChange={e => setPassword(e.target.value)}
-                  placeholder="••••••••"
+                  placeholder="password kamu"
                   required
                   className="cyber-input w-full pl-10 pr-10 py-3 rounded-xl text-sm placeholder:text-slate-600"
                 />
